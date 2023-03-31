@@ -96,9 +96,9 @@ public class FaceDetectionModule extends ReactContextBaseJavaModule {
 
                         List<Map<String, Object>> faceContoursFormatted;
 
-                        int classificationMode = (int) faceDetectorOptions.getDouble(KEY_CLASSIFICATION_MODE);
+                        int contourMode = (int) faceDetectorOptions.getDouble(KEY_CONTOUR_MODE);
 
-                        if (classificationMode == FaceDetectorOptions.CONTOUR_MODE_NONE) {
+                        if (contourMode == FaceDetectorOptions.CONTOUR_MODE_NONE) {
                             faceContoursFormatted = new ArrayList<>(0);
                         } else {
                             faceContoursFormatted = new ArrayList<>(14);
