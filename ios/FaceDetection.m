@@ -33,34 +33,34 @@ RCT_REMAP_METHOD(processImage,
             }];
             return;
         }
-        
+
         MLKVisionImage *visionImage = [[MLKVisionImage alloc] initWithImage:image];
         visionImage.orientation = image.imageOrientation;
-        
+
         MLKFaceDetectorOptions *options = [[MLKFaceDetectorOptions alloc] init];
-        
-        NSInteger *classificationMode = [faceDetectorOptions[@"classificationMode"] pointerValue];
+
+        NSInteger *classificationMode = [faceDetectorOptions[@"classificationMode"] intValue];
         if (classificationMode == (NSInteger *) 1) {
           options.classificationMode = MLKFaceDetectorClassificationModeNone;
         } else if (classificationMode == (NSInteger *) 2) {
           options.classificationMode = MLKFaceDetectorClassificationModeAll;
         }
 
-        NSInteger *contourMode = [faceDetectorOptions[@"contourMode"] pointerValue];
+        NSInteger *contourMode = [faceDetectorOptions[@"contourMode"] intValue];
         if (contourMode == (NSInteger *) 1) {
           options.contourMode = MLKFaceDetectorContourModeNone;
         } else if (contourMode == (NSInteger *) 2) {
           options.contourMode = MLKFaceDetectorContourModeAll;
         }
 
-        NSInteger *landmarkMode = [faceDetectorOptions[@"landmarkMode"] pointerValue];
+        NSInteger *landmarkMode = [faceDetectorOptions[@"landmarkMode"] intValue];
         if (landmarkMode == (NSInteger *) 1) {
           options.landmarkMode = MLKFaceDetectorLandmarkModeNone;
         } else if (landmarkMode == (NSInteger *) 2) {
           options.landmarkMode = MLKFaceDetectorLandmarkModeAll;
         }
 
-        NSInteger *performanceMode = [faceDetectorOptions[@"performanceMode"] pointerValue];
+        NSInteger *performanceMode = [faceDetectorOptions[@"performanceMode"] intValue];
         if (performanceMode == (NSInteger *) 1) {
           options.performanceMode = MLKFaceDetectorPerformanceModeFast;
         } else if (performanceMode == (NSInteger *) 2) {
@@ -68,9 +68,9 @@ RCT_REMAP_METHOD(processImage,
         }
 
         options.minFaceSize = (CGFloat) [faceDetectorOptions[@"minFaceSize"] doubleValue];
-        
+
         MLKFaceDetector *faceDetector = [MLKFaceDetector faceDetectorWithOptions:options];
-        
+
         [faceDetector processImage:visionImage completion:^(NSArray<MLKFace *> * _Nullable faces, NSError * _Nullable error) {
             if (error != nil) {
                 [self rejectPromiseWithUserInfo:reject userInfo:(NSMutableDictionary *)@{
@@ -79,12 +79,12 @@ RCT_REMAP_METHOD(processImage,
                 }];
                 return;
             }
-            
+
             NSMutableArray *facesFormatted = [[NSMutableArray alloc] init];
-            
+
             for (MLKFace *face in faces) {
                 NSMutableDictionary *visionFace = [[NSMutableDictionary alloc] init];
-                
+
                 visionFace[@"boundingBox"] = [self rectToIntArray:face.frame];
 
                 visionFace[@"headEulerAngleX"] = face.hasHeadEulerAngleX ? @(face.headEulerAngleX) : @(-1);
@@ -95,7 +95,7 @@ RCT_REMAP_METHOD(processImage,
                 visionFace[@"smilingProbability"] = face.hasSmilingProbability ? @(face.smilingProbability) : @(-1);
                 visionFace[@"trackingId"] = face.hasTrackingID ? @(face.trackingID) : @(-1);
 
-                
+
                 // Contours
                 NSMutableArray *faceContours = [[NSMutableArray alloc] init];
                 if (contourMode == (NSInteger *) 2) {
@@ -116,7 +116,7 @@ RCT_REMAP_METHOD(processImage,
                     [faceContours addObject:[self contourToDict:[face contourOfType:MLKFaceContourTypeRightCheek]]];
                 }
                 visionFace[@"faceContours"] = faceContours;
-                
+
                 // Face Landmarks
                 NSMutableArray *faceLandmarks = [[NSMutableArray alloc] init];
                 if (landmarkMode == (NSInteger *) 2) {
@@ -132,10 +132,10 @@ RCT_REMAP_METHOD(processImage,
                     [faceLandmarks addObject:[self landmarkToDict:[face landmarkOfType:MLKFaceLandmarkTypeNoseBase]]];
                 }
                 visionFace[@"landmarks"] = faceLandmarks;
-                
+
                 [facesFormatted addObject:visionFace];
             }
-            
+
             resolve(facesFormatted);
         }];
 
@@ -147,14 +147,14 @@ RCT_REMAP_METHOD(processImage,
 - (void)UIImageForFilePath:(NSString *)filePath completion:(void (^)(NSArray *errorCodeMessageArray, UIImage *image))completion
 {
     NSURL *url = [NSURL URLWithString:filePath];
-    
+
     if (url == nil) {
         completion(@[@"file-not-found", @"The local file specified does not exist on the device."], nil);
         return;
     }
-    
+
     BOOL isExists = [[NSFileManager defaultManager] fileExistsAtPath:[url path]];
-        
+
     if (!isExists) {
         completion(@[@"file-not-found", @"The local file specified does not exist on the device."], nil);
     } else {
@@ -168,7 +168,7 @@ RCT_REMAP_METHOD(processImage,
 - (NSArray *)rectToIntArray:(CGRect)rect {
     CGSize size = rect.size;
     CGPoint point = rect.origin;
-    
+
     return @[
         @(point.x),
         @(point.y),
@@ -253,7 +253,7 @@ RCT_REMAP_METHOD(processImage,
 
     visionFaceLandmarkDict[@"type"] = [self landmarkTypeToInt:visionFaceLandmark.type];
     visionFaceLandmarkDict[@"position"] = [self arrayForMLKVisionPoint:visionFaceLandmark.position];
-    
+
     return visionFaceLandmarkDict;
 }
 
